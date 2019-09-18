@@ -15,6 +15,18 @@
   * dimensions (These represent the character's size in the video game)
   * destroy() // prototype method that returns: `${this.name} was removed from the game.`
 */
+function GameObject(object){
+  this.createdAt = object.createdAt;
+  this.name = object.name;
+  this.dimensions = {
+    length: object.dimensions.length,
+    width: object.dimensions.width,
+    height: object.dimensions.height
+  }
+}
+GameObject.prototype.destroy = function(){
+  return `${this.name} was removed from the game.`;
+}
 
 /*
   === CharacterStats ===
@@ -22,6 +34,15 @@
   * takeDamage() // prototype method -> returns the string '<object name> took damage.'
   * should inherit destroy() from GameObject's prototype
 */
+function CharacterStats(humanAttr){
+  GameObject.call(this,humanAttr);
+  this.healthPoints = humanAttr.healthPoints;
+}
+CharacterStats.prototype = new Object(GameObject.prototype);
+CharacterStats.prototype.takeDamage = function(){
+  return `${this.name} took damage.`;
+};
+
 
 /*
   === Humanoid (Having an appearance or character resembling that of a human.) ===
@@ -32,7 +53,19 @@
   * should inherit destroy() from GameObject through CharacterStats
   * should inherit takeDamage() from CharacterStats
 */
- 
+ function Humanoid(charAttr){
+   CharacterStats.call(this,charAttr);
+   this.team = charAttr.team;
+   this.weapons = charAttr.weapons;
+   this.language = charAttr.language;
+ }
+ Humanoid.prototype = new Object(CharacterStats.prototype);
+ Humanoid.prototype.greet = function(){
+   return `${this.name} offers a greeting in ${this.language}`;
+ }
+
+
+
 /*
   * Inheritance chain: GameObject -> CharacterStats -> Humanoid
   * Instances of Humanoid should have all of the same properties as CharacterStats and GameObject.
@@ -41,7 +74,7 @@
 
 // Test you work by un-commenting these 3 objects and the list of console logs below:
 
-/*
+
   const mage = new Humanoid({
     createdAt: new Date(),
     dimensions: {
@@ -102,9 +135,93 @@
   console.log(archer.greet()); // Lilith offers a greeting in Elvish.
   console.log(mage.takeDamage()); // Bruce took damage.
   console.log(swordsman.destroy()); // Sir Mustachio was removed from the game.
-*/
+
 
   // Stretch task: 
   // * Create Villain and Hero constructor functions that inherit from the Humanoid constructor function.  
   // * Give the Hero and Villains different methods that could be used to remove health points from objects which could result in destruction if health gets to 0 or drops below 0;
   // * Create two new objects, one a villain and one a hero and fight it out with methods!
+
+  function Hero(heroAttr){
+    Humanoid.call(this,heroAttr);
+    this.damage = heroAttr.damage;
+    this.callingCard = heroAttr.callingCard;
+    this.title = "Hero";
+  }
+Hero.prototype = new Object(Humanoid.prototype);
+Hero.prototype.attack = function(targetObj){
+  function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
+const attackDmg = getRandomInt(this.damage);
+console.log(`${this.name} deals ${attackDmg} damage to the enemy!`)
+targetObj.healthPoints = targetObj.healthPoints - attackDmg;
+}
+
+
+  function Villain(villAttr){
+    Humanoid.call(this,villAttr);
+    this.damage = villAttr.damage;
+    this.callingCard = villAttr.callingCard
+    this.title = "Villain";
+  }
+  Villain.prototype = new Object(Humanoid.prototype);
+  Villain.prototype.attack = function(targetObj){
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+  const attackDmg = getRandomInt(this.damage);
+  console.log(`${this.name} deals ${attackDmg} damage to the enemy!`)
+  targetObj.healthPoints = targetObj.healthPoints - attackDmg;
+  }
+
+  function Combat(Hero,Villain){
+    // console.log(`A battle between the ${Hero.title} ${Hero.name} and the ${Villain.title} ${Villain.name} has begun!`);
+    Hero.attack(Villain);
+    Villain.attack(Hero);
+    if(Villain.healthPoints <= 0){
+      console.log(`The ${Villain.title} has been slain! As they die, the hero says "${Hero.callingCard}"`);
+    }else if (Hero.healthPoints <= 0){
+      console.log(`The ${Hero.title} has been slain! As they die, the villain says "${Villain.callingCard}"`);
+  }else {
+    Combat(Hero,Villain);
+  }
+}
+
+const hero1 = new Hero({
+  createdAt: new Date(),
+  dimensions: {
+    length: 2,
+    width: 1,
+    height: 1,
+  },
+  damage:10,
+  callingCard: "F.R.E.E. That spells FREE",
+  healthPoints: 5,
+  name: 'Jarry',
+  team: 'Mage Guild',
+  weapons: [
+    'Staff of Shamalama',
+  ],
+  language: 'Common Tongue',
+});
+
+const villain1 = new Villain({
+  createdAt: new Date(),
+  dimensions: {
+    length: 2,
+    width: 1,
+    height: 1,
+  },
+  damage:5,
+  callingCard: "BAM",
+  healthPoints: 10,
+  name: 'Fern',
+  team: 'The Round Table',
+  weapons: [
+    'Giant Sword',
+  ],
+  language: 'Common Tongue',
+});
+
+Combat(hero1,villain1);
